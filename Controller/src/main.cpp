@@ -63,6 +63,7 @@ void serialCommandHandler(String line)
     return;
   }
 
+  // ---- NAME <addr | name> ----
   if (command.startsWith("NAME"))
   {
     int space = line.indexOf(' ');
@@ -81,11 +82,11 @@ void serialCommandHandler(String line)
     if (isNumeric)
     {
       uint8_t address = (uint8_t)strtol(arg.c_str(), nullptr, 0);
-      deviceManager.name(address, cmdManager);
+      deviceManager.getName(address, cmdManager);
     }
     else
     {
-      deviceManager.name(arg.c_str(),cmdManager);
+      deviceManager.getName(arg.c_str(),cmdManager);
     }
 
     return;
@@ -108,6 +109,35 @@ void serialCommandHandler(String line)
 
     uint8_t address = (uint8_t)strtol(addrStr.c_str(), nullptr, 0);
     deviceManager.setName(address, nameStr.c_str(), cmdManager);
+    return;
+  }
+
+  // ---- INFO <addr | name> ----
+  if (command.startsWith("INFO"))
+  {
+    int space = line.indexOf(' ');
+    if (space < 0)
+    {
+      Serial.println("Usage: INFO <address | name>");
+      return;
+    }
+
+    String arg = line.substring(space + 1);
+    arg.trim();
+
+    // Detect numeric (decimal or hex)
+    bool isNumeric = isDigit(arg[0]) || arg.startsWith("0X");
+
+    if (isNumeric)
+    {
+      uint8_t address = (uint8_t)strtol(arg.c_str(), nullptr, 0);
+      deviceManager.info(address, cmdManager);
+    }
+    else
+    {
+      deviceManager.info(arg.c_str(), cmdManager);
+    }
+
     return;
   }
 
@@ -139,11 +169,43 @@ void serialCommandHandler(String line)
     return;
   }
 
+  // ---- SETI2C <addr> <new_addr> ----
+  if (command.startsWith("SETI2C"))
+  {
+      int firstSpace = line.indexOf(' ');
+      int secondSpace = line.indexOf(' ', firstSpace + 1);
+
+      if (firstSpace < 0 || secondSpace < 0)
+      {
+        Serial.println("Usage: SETI2C <address> <new_address>");
+        return;
+      }
+
+      String addrStr = line.substring(firstSpace + 1, secondSpace);
+      String newAddrStr = line.substring(secondSpace + 1);
+
+      uint8_t address = (uint8_t)strtol(addrStr.c_str(), nullptr, 0);
+      uint8_t newAddress = (uint8_t)strtol(newAddrStr.c_str(), nullptr, 0);
+
+      for (Ezo_board *device : deviceManager.getDevices())
+      {
+        if (device->get_address() == address)
+        {
+          deviceManager.setI2CAddress(address, newAddress, cmdManager);
+          return;
+        }
+      }
+  }
+
   Serial.println("Unknown command");
 }
 
 void loop()
 {
+  
+  // Check on EZO command updates
+  cmdManager.update();
+
   if (!Serial.available())
   {
     return;
@@ -159,7 +221,4 @@ void loop()
   }
 
   serialCommandHandler(line);
-
-  // Check on EZO command updates
-  cmdManager.update();
 }

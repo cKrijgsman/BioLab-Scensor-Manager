@@ -9,14 +9,16 @@ public:
     EzoDeviceManager(TwoWire& wire);
 
     // Scan I2C bus, returns true if a new device was found
-    bool scan();
+    bool scan(EzoCommandManager cmdManager);
 
     // Alows for updating the name of a device in the list.
-    void setName(uint8_t address, const char* name);
+    void setName(uint8_t address, const char* name, EzoCommandManager cmdManager);
 
+    void name(uint8_t address, EzoCommandManager cmdManager);
+    void name(const char *name, EzoCommandManager cmdManager);
 
-    void read(uint8_t address);  // Reads from a device based on its address
-    void read(const char *name); // Reads from a device based on its name.
+    void read(uint8_t address, EzoCommandManager cmdManager);  // Reads from a device based on its address
+    void read(const char *name, EzoCommandManager cmdManager); // Reads from a device based on its name.
 
     // Read-only access to device list
     const std::vector<Ezo_board*>& getDevices() const;

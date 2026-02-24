@@ -1,47 +1,47 @@
 #include "EzoDeviceManager.h"
+#include "EzoCommandManager.h"
 
 EzoDeviceManager deviceManager(Wire);
+EzoCommandManager cmdManager;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Wire.begin();
 
   delay(1000);
 
   Serial.println("Initial device scan...");
-  if (!deviceManager.scan()) {
+  if (!deviceManager.scan(cmdManager))
+  {
     Serial.println("No device is found.");
   }
 }
 
-void loop() {
-  if (!Serial.available()) {
-    return;
-  }
-
-  String line = Serial.readStringUntil('\n');
-  line.trim();
-  if (line.length() == 0) {
-    return;
-  }
+void serialCommandHandler(String line)
+{
 
   String command = line;
   command.toUpperCase();
 
   // ---- SCAN ----
-  if (command == "SCAN") {
+  if (command == "SCAN")
+  {
     Serial.println("Scanning for devices...");
-    if (!deviceManager.scan()) {
+    if (!deviceManager.scan(cmdManager))
+    {
       Serial.println("No device is found.");
     }
     return;
   }
 
   // ---- LIST ----
-  if (command == "LIST") {
-    const auto& devices = deviceManager.getDevices();
+  if (command == "LIST")
+  {
+    const auto &devices = deviceManager.getDevices();
 
-    if (devices.empty()) {
+    if (devices.empty())
+    {
       Serial.println("No devices registered.");
       return;
     }
@@ -49,8 +49,9 @@ void loop() {
     Serial.print("Devices found: ");
     Serial.println(devices.size());
 
-    for (size_t i = 0; i < devices.size(); ++i) {
-      Ezo_board* dev = devices[i];
+    for (size_t i = 0; i < devices.size(); ++i)
+    {
+      Ezo_board *dev = devices[i];
 
       Serial.print("[");
       Serial.print(i);
@@ -62,12 +63,42 @@ void loop() {
     return;
   }
 
+  if (command.startsWith("NAME"))
+  {
+    int space = line.indexOf(' ');
+    if (space < 0)
+    {
+      Serial.println("Usage: NAME <address | name>");
+      return;
+    }
+
+    String arg = line.substring(space + 1);
+    arg.trim();
+
+    // Detect numeric (decimal or hex)
+    bool isNumeric = isDigit(arg[0]) || arg.startsWith("0X");
+
+    if (isNumeric)
+    {
+      uint8_t address = (uint8_t)strtol(arg.c_str(), nullptr, 0);
+      deviceManager.name(address, cmdManager);
+    }
+    else
+    {
+      deviceManager.name(arg.c_str(),cmdManager);
+    }
+
+    return;
+  }
+
   // ---- SETNAME <addr> <name> ----
-  if (command.startsWith("SETNAME")) {
+  if (command.startsWith("SETNAME"))
+  {
     int firstSpace = line.indexOf(' ');
     int secondSpace = line.indexOf(' ', firstSpace + 1);
 
-    if (firstSpace < 0 || secondSpace < 0) {
+    if (firstSpace < 0 || secondSpace < 0)
+    {
       Serial.println("Usage: SETNAME <address> <name>");
       return;
     }
@@ -75,15 +106,17 @@ void loop() {
     String addrStr = line.substring(firstSpace + 1, secondSpace);
     String nameStr = line.substring(secondSpace + 1);
 
-    uint8_t address = (uint8_t) strtol(addrStr.c_str(), nullptr, 0);
-    deviceManager.setName(address, nameStr.c_str());
+    uint8_t address = (uint8_t)strtol(addrStr.c_str(), nullptr, 0);
+    deviceManager.setName(address, nameStr.c_str(), cmdManager);
     return;
   }
 
   // ---- READ <addr | name> ----
-  if (command.startsWith("READ")) {
+  if (command.startsWith("READ"))
+  {
     int space = line.indexOf(' ');
-    if (space < 0) {
+    if (space < 0)
+    {
       Serial.println("Usage: READ <address | name>");
       return;
     }
@@ -94,14 +127,39 @@ void loop() {
     // Detect numeric (decimal or hex)
     bool isNumeric = isDigit(arg[0]) || arg.startsWith("0X");
 
-    if (isNumeric) {
-      uint8_t address = (uint8_t) strtol(arg.c_str(), nullptr, 0);
-      deviceManager.read(address);
-    } else {
-      deviceManager.read(arg.c_str());
+    if (isNumeric)
+    {
+      uint8_t address = (uint8_t)strtol(arg.c_str(), nullptr, 0);
+      deviceManager.read(address, cmdManager);
+    }
+    else
+    {
+      deviceManager.read(arg.c_str(), cmdManager);
     }
     return;
   }
 
   Serial.println("Unknown command");
+}
+
+void loop()
+{
+  if (!Serial.available())
+  {
+    return;
+  }
+
+
+  // Handle User input over Serial
+  String line = Serial.readStringUntil('\n');
+  line.trim();
+  if (line.length() == 0)
+  {
+    return;
+  }
+
+  serialCommandHandler(line);
+
+  // Check on EZO command updates
+  cmdManager.update();
 }

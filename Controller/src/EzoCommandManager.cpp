@@ -15,7 +15,7 @@ void EzoCommandManager::queueCommand(Ezo_board* device,
     cmd.callback = callback;
     cmd.sent = false;
 
-    Serial.print("Queueing command for device 0x");
+    Serial.print("#Queueing command for device 0x");
     Serial.print(device->get_address(), HEX);
     Serial.print(": \"");
     Serial.print(command);

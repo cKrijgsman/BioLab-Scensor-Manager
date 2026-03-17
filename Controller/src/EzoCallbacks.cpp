@@ -31,12 +31,12 @@ void onEzoGetInfo(Ezo_board* device, const char* response, EzoCommandManager& mg
 {
     // Response format is "EZO,DEVICE_TYPE,VERSION". We print it in the following format:
     // INFO,DEVICE_NAME,ADDRESS,DEVICE_TYPE,VERSION
-    Serial.println("Received INFO response: " + String(response));
+    Serial.println("#Received INFO response: " + String(response));
     String responseString = String(response);
     int firstComma = responseString.indexOf(',');
     int secondComma = responseString.indexOf(',', firstComma + 1);
     if (firstComma == -1 || secondComma == -1) {
-        Serial.print("Warning: unexpected INFO response format from device 0x");
+        Serial.print("#Warning: unexpected INFO response format from device 0x");
         Serial.println(device->get_address(), HEX);
         return;
     }

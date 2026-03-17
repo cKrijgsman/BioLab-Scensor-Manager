@@ -32,7 +32,7 @@ bool EzoDeviceManager::scan(EzoCommandManager &cmdManager)
                     // Response format: I?,TYPE,VERSION
                     // `EzoCommandManager` now substitutes empty responses with the sentinel "NONE".
                     if (!response || response[0] == '\0' || strcmp(response, "NONE") == 0) {
-                        Serial.print("Warning: empty/none response for I command from device 0x");
+                        Serial.print("#Warning: empty/none response for I command from device 0x");
                         Serial.println(device->get_address(), HEX);
                         return;
                     }
@@ -57,7 +57,7 @@ bool EzoDeviceManager::scan(EzoCommandManager &cmdManager)
                         // Response format: Name?,DEVICE_NAME
                         // If command manager supplied the "NONE" sentinel, treat as missing name
                         if (!nameResponse || nameResponse[0] == '\0' || strcmp(nameResponse, "NONE") == 0) {
-                            Serial.print("Warning: empty/none Name? response from device 0x");
+                            Serial.print("#Warning: empty/none Name? response from device 0x");
                             Serial.println(device->get_address(), HEX);
                             // still add device with fallback name
                             addDevice(device);
@@ -84,7 +84,7 @@ bool EzoDeviceManager::scan(EzoCommandManager &cmdManager)
                         addDevice(device);
                         setDeviceNameOwned(device, deviceName);
 
-                        Serial.print("Device at 0x");
+                        Serial.print("#Device at 0x");
                         Serial.print(device->get_address(), HEX);
                         Serial.print("(");
                         Serial.print(device->get_address());
@@ -128,7 +128,7 @@ void EzoDeviceManager::setName(uint8_t address, const char *name, EzoCommandMana
         }
     }
 
-    Serial.print("No device found at address ");
+    Serial.print("#No device found at address ");
     Serial.println(address);
 }
 
@@ -147,7 +147,7 @@ void EzoDeviceManager::read(uint8_t address, EzoCommandManager &cmdManager)
         }
     }
 
-    Serial.print("No device found at address ");
+    Serial.print("#No device found at address ");
     Serial.println(address);
 }
 
@@ -165,7 +165,7 @@ void EzoDeviceManager::read(const char *name, EzoCommandManager &cmdManager)
         }
     }
 
-    Serial.print("No device found with name ");
+    Serial.print("#No device found with name ");
     Serial.println(name);
 }
 
@@ -183,7 +183,7 @@ void EzoDeviceManager::getName(uint8_t address, EzoCommandManager &cmdManager)
         }
     }
 
-    Serial.print("No device found at address ");
+    Serial.print("#No device found at address ");
     Serial.println(address);
 }
 
@@ -220,7 +220,7 @@ void EzoDeviceManager::info(uint8_t address, EzoCommandManager &cmdManager)
         }
     }
 
-    Serial.print("No device found at address ");
+    Serial.print("#No device found at address ");
     Serial.println(address);
 }
 
@@ -257,7 +257,7 @@ void EzoDeviceManager::info(const char *name, EzoCommandManager &cmdManager)
         }
     }
 
-    Serial.print("No device found with name ");
+    Serial.print("#No device found with name ");
     Serial.println(name);
 }
 

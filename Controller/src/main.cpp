@@ -11,10 +11,10 @@ void setup()
 
   delay(1000);
 
-  Serial.println("Initial device scan...");
+  Serial.println("#Initial device scan...");
   if (!deviceManager.scan(cmdManager))
   {
-    Serial.println("No device is found.");
+    Serial.println("#No device is found.");
   }
 }
 
@@ -30,7 +30,7 @@ void serialCommandHandler(String line)
     Serial.println("Scanning for devices...");
     if (!deviceManager.scan(cmdManager))
     {
-      Serial.println("No device is found.");
+      Serial.println("#No device is found.");
     }
     return;
   }
@@ -44,7 +44,7 @@ void serialCommandHandler(String line)
 
     if (firstSpace < 0 || secondSpace < 0)
     {
-      Serial.println("Usage: CALIBRATE <address | name> <\"clear\" | \"?\" | calibration data> <response delay>");
+      Serial.println("#Usage: CALIBRATE <address | name> <\"clear\" | \"?\" | calibration data> <response delay>");
       return;
     }
 
@@ -95,22 +95,20 @@ void serialCommandHandler(String line)
 
     if (devices.empty())
     {
-      Serial.println("No devices registered.");
+      Serial.println("#No devices registered.");
       return;
     }
 
-    Serial.print("Devices found: ");
+    Serial.print("#Devices found: ");
     Serial.println(devices.size());
 
     for (size_t i = 0; i < devices.size(); ++i)
     {
       Ezo_board *dev = devices[i];
 
-      Serial.print("[");
-      Serial.print(i);
-      Serial.print("] Address: 0x");
+      Serial.print("DEVICE,");
       Serial.print(dev->get_address(), HEX);
-      Serial.print("  Name: ");
+      Serial.print(",");
       Serial.println(dev->get_name());
     }
     return;
@@ -122,7 +120,7 @@ void serialCommandHandler(String line)
     int space = line.indexOf(' ');
     if (space < 0)
     {
-      Serial.println("Usage: NAME <address | name>");
+      Serial.println("#Usage: NAME <address | name>");
       return;
     }
 
@@ -153,7 +151,7 @@ void serialCommandHandler(String line)
 
     if (firstSpace < 0 || secondSpace < 0)
     {
-      Serial.println("Usage: SETNAME <address> <name>");
+      Serial.println("#Usage: SETNAME <address> <name>");
       return;
     }
 
@@ -171,7 +169,7 @@ void serialCommandHandler(String line)
     int space = line.indexOf(' ');
     if (space < 0)
     {
-      Serial.println("Usage: INFO <address | name>");
+      Serial.println("#Usage: INFO <address | name>");
       return;
     }
 
@@ -200,7 +198,7 @@ void serialCommandHandler(String line)
     int space = line.indexOf(' ');
     if (space < 0)
     {
-      Serial.println("Usage: READ <address | name>");
+      Serial.println("#Usage: READ <address | name>");
       return;
     }
 
@@ -230,7 +228,7 @@ void serialCommandHandler(String line)
 
       if (firstSpace < 0 || secondSpace < 0)
       {
-        Serial.println("Usage: SETI2C <address> <new_address>");
+        Serial.println("#Usage: SETI2C <address> <new_address>");
         return;
       }
 
@@ -258,7 +256,7 @@ void serialCommandHandler(String line)
     return;
   }
 
-  Serial.println("Unknown command");
+  Serial.println("#Unknown command");
 }
 
 void loop()

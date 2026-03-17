@@ -232,19 +232,12 @@ void EzoDeviceManager::setI2CAddress(uint8_t old_address, uint8_t new_address, E
         {
             String command = "I2C," + String(new_address);
             cmdManager.queueCommand(device, command.c_str(), 1000, [this, new_address, old_address](Ezo_board *device, const char *response, EzoCommandManager &mgr){
-                // Update the device's address in our list
-                device->set_address(new_address);
-
-                // Send information on the address change in the following format:
-                // UPDATE,DEVICE_NAME,OLD_ADDRESS,NEW_ADDRESS
-                Serial.print("UPDATE,");
-                Serial.print(device->get_name());
-                Serial.print(",0x");
-                Serial.print(old_address, HEX);
-                Serial.print(",0x");
-                Serial.println(new_address, HEX);
-
-                sendInfo(device, mgr);
+                // For Teensy 4.x, disable USB to avoid confusing the host computer
+                USB1_USBCMD = 0; 
+                delay(50); // Small delay to ensure USB disconnects
+                
+                // Trigger system reset
+                SCB_AIRCR = 0x05FA0004;
             });
         }
     }
@@ -357,4 +350,53 @@ void EzoDeviceManager::freeDeviceName(Ezo_board *device)
 void EzoDeviceManager::sendInfo(Ezo_board *device, EzoCommandManager &cmdManager)
 {
     cmdManager.queueCommand(device, "I", 300, onEzoGetInfo);
+}
+
+void EzoDeviceManager::calibrate(Ezo_board *device, const char *calibArg, uint32_t delayMs, EzoCommandManager &cmdManager)
+{
+    String command;
+    if (strcmp(calibArg, "clear") == 0)
+    {
+        command = "Cal,clear";
+        cmdManager.queueCommand(device, command.c_str(), delayMs, onEzoEmptyResponse);
+    }
+    else if (strcmp(calibArg, "?") == 0)
+    {
+        command = "Cal,?";
+        cmdManager.queueCommand(device, command.c_str(), delayMs, onEzoCalibrate);
+    }
+    else
+    {
+        // Assume it's a calibration value
+        command = "Cal," + String(calibArg);
+        cmdManager.queueCommand(device, command.c_str(), delayMs, onEzoEmptyResponse);
+    }
+
+    
+}
+
+void EzoDeviceManager::getDeviceByAddress(uint8_t address, Ezo_board *&out_device)
+{
+    out_device = nullptr;
+    for (Ezo_board *device : _device_list)
+    {
+        if (device->get_address() == address)
+        {
+            out_device = device;
+            return;
+        }
+    }
+}
+
+void EzoDeviceManager::getDeviceByName(const char *name, Ezo_board *&out_device)
+{
+    out_device = nullptr;
+    for (Ezo_board *device : _device_list)
+    {
+        if (strcmp(device->get_name(), name) == 0)
+        {
+            out_device = device;
+            return;
+        }
+    }
 }

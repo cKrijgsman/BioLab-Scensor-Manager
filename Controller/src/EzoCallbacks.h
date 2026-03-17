@@ -11,3 +11,9 @@ void onEzoGetName(Ezo_board* device, const char* response, EzoCommandManager& mg
 
 // Called when an info ("I") command finishes
 void onEzoGetInfo(Ezo_board* device, const char* response, EzoCommandManager& mgr);
+
+// Called when a calibrate ("Cal,...") command finishes
+void onEzoCalibrate(Ezo_board* device, const char* response, EzoCommandManager& mgr);
+
+// Called when a set I2C address ("I2C,ADDR,...") command finishes
+void onEzoEmptyResponse(Ezo_board* device, const char* response, EzoCommandManager& mgr);

@@ -54,3 +54,22 @@ void onEzoGetInfo(Ezo_board* device, const char* response, EzoCommandManager& mg
     Serial.println(version);
 
 }
+
+void onEzoCalibrate(Ezo_board* device, const char* response, EzoCommandManager& mgr)
+{
+    Serial.print("CALIBRATE,");
+    Serial.print(device->get_name());
+    Serial.print(",0x");
+    Serial.print(device->get_address(), HEX);
+    Serial.print(",");
+    Serial.println(response);
+}
+
+void onEzoEmptyResponse(Ezo_board* device, const char* response, EzoCommandManager& mgr)
+{
+    // This can be used as a generic callback for commands where we don't expect a meaningful response, but want to log completion or trigger follow-up actions.
+    Serial.print("COMMAND_COMPLETE,");
+    Serial.print(device->get_name());
+    Serial.print(",0x");
+    Serial.println(device->get_address(), HEX);
+}

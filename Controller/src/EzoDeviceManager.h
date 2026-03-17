@@ -26,7 +26,13 @@ public:
     void info(uint8_t address, EzoCommandManager& cmdManager);  // Gets info from a device based on its address
     void info(const char *name, EzoCommandManager& cmdManager); // Gets info from a device based on its name.
 
+    void calibrate(Ezo_board* device, const char* calibArg, uint32_t delayMs, EzoCommandManager& cmdManager);
+
+
     void setI2CAddress(uint8_t old_address, uint8_t new_address, EzoCommandManager& cmdManager);
+
+    void getDeviceByAddress(uint8_t address, Ezo_board*& out_device);
+    void getDeviceByName(const char* name, Ezo_board*& out_device);
 
     // Read-only access to device list
     const std::vector<Ezo_board*>& getDevices() const;

@@ -35,6 +35,59 @@ void serialCommandHandler(String line)
     return;
   }
 
+  // ---- CALIBRATE <addr | name> <"clear" | "?" | calibration data> <response delay> ----
+  if(command.startsWith("CALIBRATE"))
+  {
+    int firstSpace = line.indexOf(' ');
+    int secondSpace = line.indexOf(' ', firstSpace + 1);
+    int thirdSpace = line.indexOf(' ', secondSpace + 1);
+
+    if (firstSpace < 0 || secondSpace < 0)
+    {
+      Serial.println("Usage: CALIBRATE <address | name> <\"clear\" | \"?\" | calibration data> <response delay>");
+      return;
+    }
+
+    String arg = line.substring(firstSpace + 1, secondSpace);
+    String calibArg = line.substring(secondSpace + 1, thirdSpace);
+    calibArg.trim();
+
+    // If the calibration delay is not provided, default to 300ms
+    uint32_t delayMs = 300; // default
+    if (thirdSpace >= 0) {
+      String delayStr = line.substring(thirdSpace + 1);
+      delayStr.trim();
+      if (delayStr.length() > 0) {
+        delayMs = (uint32_t)strtoul(delayStr.c_str(), nullptr, 0);
+      }
+    }
+
+    // Detect numeric (decimal or hex)
+    bool isNumeric = isDigit(arg[0]) || arg.startsWith("0X");
+
+    Ezo_board* device = nullptr;
+
+    if (isNumeric)
+    {
+      uint8_t address = (uint8_t)strtol(arg.c_str(), nullptr, 0);
+      deviceManager.getDeviceByAddress(address, device);
+    }
+    else
+    {
+      deviceManager.getDeviceByName(arg.c_str(), device);
+    }
+
+    if (device)
+    {
+      deviceManager.calibrate(device, calibArg.c_str(), delayMs, cmdManager);
+    }
+    else
+    {
+      Serial.println("Device not found.");
+    }
+    return;
+  }
+
   // ---- LIST ----
   if (command == "LIST")
   {
@@ -195,6 +248,14 @@ void serialCommandHandler(String line)
           return;
         }
       }
+  }
+
+  // ---- QUEUESIZE ----
+  if (command == "QUEUESIZE")
+  {
+    Serial.print("QUEUESIZE,");
+    Serial.println(cmdManager.size());
+    return;
   }
 
   Serial.println("Unknown command");
